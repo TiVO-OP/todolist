@@ -96,7 +96,7 @@ monitor.clear()
 start(1,1)
 writetasks()
 while true do
-    tasks = rednet.receive()
+    id,tasks = rednet.receive()
     rednet.broadcast(tasks)
     local event,button,x,y = os.pullEvent("mouse_click")
     for p,c in pairs(lineindex) do
@@ -128,7 +128,6 @@ while true do
         deleting=false
         table.remove(tasks,deletenumber)
         savetofile()
-        rednet.broadcast(tasks)
         monitor.setBackgroundColor(colors.purple)
         monitor.clear()
         start(1,1)
