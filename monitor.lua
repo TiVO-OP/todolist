@@ -1,3 +1,4 @@
+
 modem = peripheral.find("modem", rednet.open)
 monitor = peripheral.find("monitor")
 rednet.CHANNEL_BROADCAST = 55859
@@ -96,6 +97,7 @@ start(1,1)
 writetasks()
 while true do
     tasks = rednet.receive()
+    rednet.broadcast(tasks)
     local event,button,x,y = os.pullEvent("mouse_click")
     for p,c in pairs(lineindex) do
         if button==1 and y==p and x==26 then
@@ -112,6 +114,7 @@ while true do
             monitor.clear()
             start(1,1)
             writetasks()
+            rednet.broadcast(tasks)
         end
     end
     if button==1 and deleting==true and x<=10 and x>=4 and y==9 then
@@ -125,6 +128,7 @@ while true do
         deleting=false
         table.remove(tasks,deletenumber)
         savetofile()
+        rednet.broadcast(tasks)
         monitor.setBackgroundColor(colors.purple)
         monitor.clear()
         start(1,1)
