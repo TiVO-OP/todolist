@@ -154,6 +154,7 @@ start()
 writetasks()
 while true do
     rednet.broadcast(tasks)
+    tasks = rednet.receive()
     local event,button,x,y = os.pullEvent("mouse_click")
     for p,c in pairs(lineindex) do
         if adding==false and button==1 and y==p and x==26 then
@@ -169,6 +170,7 @@ while true do
             term.clear()
             start()
             writetasks()
+            rednet.broadcast(tasks)
         end
     end
     if deleting==false and adding==false and button==1 and x>=2 and x<=6 and y==line+2 then
@@ -185,6 +187,7 @@ while true do
     elseif button==1 and adding==false and deleting==true and x<=24 and x>=17 and y==9 then
         deleting=false
         table.remove(tasks,deletenumber)
+        rednet.broadcast(tasks)
         savetofile()
         term.setBackgroundColor(colors.purple)
         term.clear()
