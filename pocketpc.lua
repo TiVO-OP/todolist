@@ -3,8 +3,8 @@ rednet.CHANNEL_BROADCAST = 55859
 term.setPaletteColor(colors.magenta,0xa848e8)
 local wrap = require "cc.strings".wrap
 local inputting = ""
-function start(x,y)
-    term.setCursorPos(x,y)
+function start()
+    term.setCursorPos(2,1)
     term.setBackgroundColor(colors.purple)
     term.setTextColor(colors.white)
     term.write("TO-DO LIST:")
@@ -12,8 +12,8 @@ function start(x,y)
 end
 local del_pressed=0
 local deletenumber=0
-local writingtask = false
 local line=2
+local writing = false
 local deleting=false
 local adding=false
 local lineindex={}
@@ -37,34 +37,47 @@ end
 
 function writetasks()
     lineindex={}
+    line=2
     rednet.broadcast(tasks)
         adding=false
-        line=2
         for k,v in pairs(tasks) do
             table.insert(lineindex,line,k)
             term.setBackgroundColor(colors.magenta)
-            term.setCursorPos(1,line)
+            term.setCursorPos(2,line)
             term.clearLine()
-            if v.isDone==0 then
-                term.setBackgroundColor(colors.white)
-            else 
-                term.setBackgroundColor(colors.lime)
-            end
+            term.setBackgroundColor(colors.purple)
+            term.setCursorPos(1,line)
             term.write(" ")
+            if v.isDone==0 then
+                bg=(colors.white)
+                fg=(colors.black)
+            else 
+                bg=(colors.lime)
+                fg=(colors.white)
+            end
+            term.setTextColor(fg)
+            term.setBackgroundColor(bg)
+            term.write("\x88")
+            term.setBackgroundColor(colors.magenta)
+            term.setTextColor(bg)
+            term.write("\x95")
             term.setBackgroundColor(colors.red)
             term.setCursorPos(26,line)
+            term.setTextColor(colors.white)
             term.write("X")
-            for i,wers in pairs(wrap(v.tasken,22)) do
+            for i,wers in pairs(wrap(v.tasken,21)) do
                 if i>1 then
                     term.setBackgroundColor(colors.magenta)
-                    term.setCursorPos(2,line)
-                    term.write(string.rep(" ",25))
                     term.setCursorPos(3,line)
+                    term.write(string.rep(" ",24))
+                    term.setCursorPos(4,line)
+                    term.setTextColor(bg)
                     term.write(wers)
                     line=line+1
                 else
                     term.setBackgroundColor(colors.magenta)
-                    term.setCursorPos(3,line)
+                    term.setCursorPos(4,line)
+                    term.setTextColor(bg)
                     term.write(wers)
                     line=line+1
                 end
@@ -137,7 +150,7 @@ function draw()
 end
 term.setBackgroundColor(colors.purple)
 term.clear()
-start(1,1)
+start()
 writetasks()
 while true do
     rednet.broadcast(tasks)
@@ -145,8 +158,7 @@ while true do
     for p,c in pairs(lineindex) do
         if adding==false and button==1 and y==p and x==26 then
             deletetask(c)
-        end
-        if adding==false and deleting==false and button==1 and y==p and x==1 then
+        elseif adding==false and deleting==false and button==1 and y==p and x>=2 and x<=25 then
             if tasks[c].isDone == 0 then
                 tasks[c].isDone = 1
             else 
@@ -155,55 +167,50 @@ while true do
             savetofile()
             term.setBackgroundColor(colors.purple)
             term.clear()
-            start(1,1)
+            start()
             writetasks()
         end
     end
-    if deleting==false and adding==false and button==1 and x>= 2 and x<=7 and y == line+2 then
+    if deleting==false and adding==false and button==1 and x>=2 and x<=6 and y==line+2 then
         addtask()
         term.setCursorPos(4+#inputting,7)
         term.setCursorBlink(true)
         writing=true
-    end
-    if button==1 and adding==false and deleting==true and x<=10 and x>=4 and y==9 then
+    elseif button==1 and adding==false and deleting==true and x<=10 and x>=4 and y==9 then
         deleting=false
         term.setBackgroundColor(colors.purple)
         term.clear()
-        start(1,1)
+        start()
         writetasks()
-    end
-    if button==1 and adding==false and deleting==true and x<=24 and x>=17 and y==9 then
+    elseif button==1 and adding==false and deleting==true and x<=24 and x>=17 and y==9 then
         deleting=false
         table.remove(tasks,deletenumber)
         savetofile()
         term.setBackgroundColor(colors.purple)
         term.clear()
-        start(1,1)
+        start()
         writetasks()
-    end
-    if button==1 and deleting==false and adding==true and x<=10 and x>=4 and y==9 then
+    elseif button==1 and deleting==false and adding==true and x<=10 and x>=4 and y==9 then
         term.setBackgroundColor(colors.purple)
         term.clear()
-        start(1,1)
+        start()
         writetasks()
         term.setCursorBlink(false)
         inputting=""
         adding=false
         writing=false
-    end
-    if button==1 and deleting==false and adding==true and x>=17 and x<=24 and y==9 then
+    elseif button==1 and deleting==false and adding==true and x>=17 and x<=24 and y==9 then
         table.insert(tasks, {isDone=0, tasken=inputting})
         savetofile()
         rednet.broadcast(tasks)
         inputting=""
         term.setBackgroundColor(colors.purple)
         term.clear()
-        start(1,1)
+        start()
         writetasks()
         adding=false
         writing=false
-    end
-    if button==1 and deleting==false and adding==true and x>=4 and x<=24 and y==7 then
+    elseif button==1 and deleting==false and adding==true and x>=4 and x<=24 and y==7 then
         term.setCursorPos(4+#inputting,7)
         term.setCursorBlink(true)
         writing=true
@@ -220,14 +227,12 @@ while true do
                     cursorx = cursorx-1
                 end
                 draw()
-            end
-            if p1 == keys.left then
+            elseif p1 == keys.left then
                 cursorx,cursory = term.getCursorPos()
                 if cursorx>=5 then
                     term.setCursorPos(cursorx-1,cursory)
                 end
-            end
-            if p1 == keys.right then
+            elseif p1 == keys.right then
                 cursorx,cursory = term.getCursorPos()
                 if cursorx<4+#inputting then
                     term.setCursorPos(cursorx+1,cursory)
@@ -243,7 +248,7 @@ while true do
             elseif x>=4 and x<=10 and y==9 then
                 term.setBackgroundColor(colors.purple)
                 term.clear()
-                start(1,1)
+                start()
                 writetasks()
                 term.setCursorBlink(false)
                 inputting=""
@@ -257,7 +262,7 @@ while true do
                 inputting=""
                 term.setBackgroundColor(colors.purple)
                 term.clear()
-                start(1,1)
+                start()
                 writetasks()
                 adding=false
                 writing=false
@@ -267,5 +272,5 @@ while true do
             end
         end
     end
-    os.sleep(0.5)
+    os.sleep(0.1)
 end
