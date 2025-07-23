@@ -154,7 +154,7 @@ start()
 writetasks()
 while true do
     rednet.broadcast(tasks)
-    tasks = rednet.receive()
+    id,tasks = rednet.receive()
     local event,button,x,y = os.pullEvent("mouse_click")
     for p,c in pairs(lineindex) do
         if adding==false and button==1 and y==p and x==26 then
