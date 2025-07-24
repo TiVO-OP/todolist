@@ -38,7 +38,6 @@ end
 function writetasks()
     lineindex={}
     line=2
-    rednet.broadcast(tasks)
         adding=false
         for k,v in pairs(tasks) do
             table.insert(lineindex,line,k)
@@ -68,7 +67,7 @@ function writetasks()
             for i,wers in pairs(wrap(v.tasken,21)) do
                 if i>1 then
                     term.setBackgroundColor(colors.magenta)
-                    term.setCursorPos(3,line)
+                    term.setCursorPos(4,line)
                     term.write(string.rep(" ",24))
                     term.setCursorPos(4,line)
                     term.setTextColor(bg)
@@ -153,8 +152,6 @@ term.clear()
 start()
 writetasks()
 while true do
-    rednet.broadcast(tasks)
-    id,tasks = rednet.receive()
     local event,button,x,y = os.pullEvent("mouse_click")
     for p,c in pairs(lineindex) do
         if adding==false and button==1 and y==p and x==26 then
@@ -170,7 +167,6 @@ while true do
             term.clear()
             start()
             writetasks()
-            rednet.broadcast(tasks)
         end
     end
     if deleting==false and adding==false and button==1 and x>=2 and x<=6 and y==line+2 then
@@ -187,7 +183,6 @@ while true do
     elseif button==1 and adding==false and deleting==true and x<=24 and x>=17 and y==9 then
         deleting=false
         table.remove(tasks,deletenumber)
-        rednet.broadcast(tasks)
         savetofile()
         term.setBackgroundColor(colors.purple)
         term.clear()
@@ -205,7 +200,6 @@ while true do
     elseif button==1 and deleting==false and adding==true and x>=17 and x<=24 and y==9 then
         table.insert(tasks, {isDone=0, tasken=inputting})
         savetofile()
-        rednet.broadcast(tasks)
         inputting=""
         term.setBackgroundColor(colors.purple)
         term.clear()
@@ -261,7 +255,6 @@ while true do
                 term.setCursorBlink(false)
                 table.insert(tasks, {isDone=0,tasken=inputting})
                 savetofile()
-                rednet.broadcast(tasks)
                 inputting=""
                 term.setBackgroundColor(colors.purple)
                 term.clear()
