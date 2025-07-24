@@ -106,12 +106,12 @@ monitor.clear()
 start()
 writetasks()
 while true do
-    local event,button,x,y = os.pullEvent("monitor_touch")
+    local event,side,x,y = os.pullEvent("monitor_touch")
     for p,c in pairs(lineindex) do
-        if button==1 and y==p and x==26 then
+        if y==p and x==26 then
             deletetask(c)
         end
-        if deleting==false and button==1 and y==p and x==1 then
+        if deleting==false and y==p and x==1 then
             if tasks[c].isDone == 0 then
                 tasks[c].isDone = 1
             else 
@@ -124,14 +124,14 @@ while true do
             writetasks()
         end
     end
-    if button==1 and deleting==true and x<=10 and x>=4 and y==9 then
+    if deleting==true and x<=10 and x>=4 and y==9 then
         deleting=false
         monitor.setBackgroundColor(colors.purple)
         monitor.clear()
         start()
         writetasks()
     end
-    if button==1 and deleting==true and x<=24 and x>=17 and y==9 then
+    if deleting==true and x<=24 and x>=17 and y==9 then
         deleting=false
         table.remove(tasks,deletenumber)
         savetofile()
