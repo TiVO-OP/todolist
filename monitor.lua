@@ -4,13 +4,14 @@ monitor = peripheral.find("monitor")
 rednet.CHANNEL_BROADCAST = 55859
 monitor.setPaletteColor(colors.magenta,0xa848e8)
 local wrap = require "cc.strings".wrap
-function start(x,y)
-    monitor.setCursorPos(x,y)
+function start()
+    monitor.setCursorPos(2,1)
     monitor.setBackgroundColor(colors.purple)
     monitor.setTextColor(colors.white)
     monitor.write("TO-DO LIST:")
     return 0
 end
+local monitorW,monitorH = monitor.getSize()
 local deletenumber=0
 local line=2
 local deleting=false
@@ -35,12 +36,11 @@ end
 
 function writetasks()
     lineindex={}
-    id,tasks = rednet.receive()
         line=2
         for k,v in pairs(tasks) do
             table.insert(lineindex,line,k)
             monitor.setBackgroundColor(colors.magenta)
-            monitor.setCursorPos(1,line)
+            monitor.setCursorPos(2,line)
             monitor.clearLine()
             if v.isDone==0 then
                 monitor.setBackgroundColor(colors.white)
@@ -49,19 +49,19 @@ function writetasks()
             end
             monitor.write("\x88")
             monitor.setBackgroundColor(colors.red)
-            monitor.setCursorPos(26,line)
+            monitor.setCursorPos(monitorW,line)
             monitor.write("X")
-            for i,wers in pairs(wrap(v.tasken,22)) do
+            for i,wers in pairs(wrap(v.tasken,monitorW-4)) do
                 if i>1 then
                     monitor.setBackgroundColor(colors.magenta)
-                    monitor.setCursorPos(2,line)
-                    monitor.write(string.rep(" ",25))
                     monitor.setCursorPos(3,line)
+                    monitor.write(string.rep(" ",monitorW-1))
+                    monitor.setCursorPos(4,line)
                     monitor.write(wers)
                     line=line+1
                 else
                     monitor.setBackgroundColor(colors.magenta)
-                    monitor.setCursorPos(3,line)
+                    monitor.setCursorPos(4,line)
                     monitor.write(wers)
                     line=line+1
                 end
@@ -93,11 +93,9 @@ end
 
 monitor.setBackgroundColor(colors.purple)
 monitor.clear()
-start(1,1)
+start()
 writetasks()
 while true do
-    id,tasks = rednet.receive()
-    rednet.broadcast(tasks)
     local event,button,x,y = os.pullEvent("mouse_click")
     for p,c in pairs(lineindex) do
         if button==1 and y==p and x==26 then
@@ -112,16 +110,15 @@ while true do
             savetofile()
             monitor.setBackgroundColor(colors.purple)
             monitor.clear()
-            start(1,1)
+            start()
             writetasks()
-            rednet.broadcast(tasks)
         end
     end
     if button==1 and deleting==true and x<=10 and x>=4 and y==9 then
         deleting=false
         monitor.setBackgroundColor(colors.purple)
         monitor.clear()
-        start(1,1)
+        start()
         writetasks()
     end
     if button==1 and deleting==true and x<=24 and x>=17 and y==9 then
@@ -130,7 +127,7 @@ while true do
         savetofile()
         monitor.setBackgroundColor(colors.purple)
         monitor.clear()
-        start(1,1)
+        start()
         writetasks()
     end
     os.sleep(0.5)
