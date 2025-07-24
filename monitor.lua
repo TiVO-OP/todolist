@@ -54,7 +54,7 @@ function writetasks()
             for i,wers in pairs(wrap(v.tasken,monitorW-4)) do
                 if i>1 then
                     monitor.setBackgroundColor(colors.magenta)
-                    monitor.setCursorPos(3,line)
+                    monitor.setCursorPos(4,line)
                     monitor.write(string.rep(" ",monitorW-1))
                     monitor.setCursorPos(4,line)
                     monitor.write(wers)
