@@ -60,6 +60,7 @@ function writetasks()
             monitor.write("\x95")
             monitor.setBackgroundColor(colors.red)
             monitor.setCursorPos(monitorW,line)
+            monitor.setTextColor(colors.white)
             monitor.write("X")
             for i,wers in pairs(wrap(v.tasken,monitorW-4)) do
                 if i>1 then
