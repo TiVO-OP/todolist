@@ -46,6 +46,7 @@ function receiveUpdates()
             local data = textutils.unserialize(message)
             if data then
                 tasks = data
+                savetofile()
                 monitor.setBackgroundColor(colors.purple)
                 start()
                 writetasks()
