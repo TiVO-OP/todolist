@@ -112,7 +112,7 @@ while true do
         if y==p and x==monitorW then
             deletetask(c)
         end
-        if deleting==false and y==p and x>=2 and x<=3 then
+        if deleting==false and y==p and x>=2 and x<=monitorW-1 then
             if tasks[c].isDone == 0 then
                 tasks[c].isDone = 1
             else 
