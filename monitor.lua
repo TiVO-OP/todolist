@@ -62,6 +62,7 @@ function writetasks()
             monitor.setCursorPos(monitorW,line)
             monitor.setTextColor(colors.white)
             monitor.write("X")
+            monitor.setTextColor(bg)
             for i,wers in pairs(wrap(v.tasken,monitorW-4)) do
                 if i>1 then
                     monitor.setBackgroundColor(colors.magenta)
@@ -139,5 +140,5 @@ while true do
         start()
         writetasks()
     end
-    os.sleep(0.5)
+    os.sleep(0.1)
 end
