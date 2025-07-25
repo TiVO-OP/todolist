@@ -33,7 +33,25 @@ function savetofile()
     io.close(tasks.txt)
     return 0
 end
+function broadcastTasks()
+    local serialized = textutils.serialize(tasks)
+    rednet.broadcast(serialized, "todolist_sync")
+end
 
+function receiveUpdates()
+    while true do
+        local senderId, message, protocol = rednet.receive("todolist_sync")
+        if senderId ~= os.getComputerID() then
+            local data = textutils.unserialize(message)
+            if data then
+                tasks = data
+                term.setBackgroundColor(colors.purple)
+                start()
+                writetasks()
+            end
+        end
+    end
+end
 function writetasks()
     lineindex={}
         line=2
@@ -107,38 +125,44 @@ monitor.setBackgroundColor(colors.purple)
 monitor.clear()
 start()
 writetasks()
-while true do
-    local event,side,x,y = os.pullEvent("monitor_touch")
-    for p,c in pairs(lineindex) do
-        if y==p and x==monitorW then
-            deletetask(c)
-        elseif deleting==false and y==p and x>=2 and x<=monitorW-1 then
-            if tasks[c].isDone == 0 then
-                tasks[c].isDone = 1
-            else 
-                tasks[c].isDone = 0
+function main()
+    while true do
+        local event,side,x,y = os.pullEvent("monitor_touch")
+        for p,c in pairs(lineindex) do
+            if y==p and x==monitorW then
+                deletetask(c)
+            elseif deleting==false and y==p and x>=2 and x<=monitorW-1 then
+                if tasks[c].isDone == 0 then
+                    tasks[c].isDone = 1
+                else 
+                    tasks[c].isDone = 0
+                end
+                savetofile()
+                broadcastTasks()
+                monitor.setBackgroundColor(colors.purple)
+                monitor.clear()
+                start()
+                writetasks()
             end
+        end
+        if deleting==true and x<=10 and x>=4 and y==9 then
+            deleting=false
+            monitor.setBackgroundColor(colors.purple)
+            monitor.clear()
+            start()
+            writetasks()
+        elseif deleting==true and x<=24 and x>=17 and y==9 then
+            deleting=false
+            table.remove(tasks,deletenumber)
             savetofile()
+            broadcastTasks()
             monitor.setBackgroundColor(colors.purple)
             monitor.clear()
             start()
             writetasks()
         end
+        os.sleep(0.1)
     end
-    if deleting==true and x<=10 and x>=4 and y==9 then
-        deleting=false
-        monitor.setBackgroundColor(colors.purple)
-        monitor.clear()
-        start()
-        writetasks()
-    elseif deleting==true and x<=24 and x>=17 and y==9 then
-        deleting=false
-        table.remove(tasks,deletenumber)
-        savetofile()
-        monitor.setBackgroundColor(colors.purple)
-        monitor.clear()
-        start()
-        writetasks()
-    end
-    os.sleep(0.1)
 end
+
+parallel.waitForAny(receiveUpdates,main)
