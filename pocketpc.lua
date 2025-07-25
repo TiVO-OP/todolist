@@ -25,6 +25,25 @@ for line in io.lines("tasks.txt") do
         table.insert(tasks, {isDone=0, tasken=line:sub(3,#line)})
     end
 end
+function broadcastTasks()
+    local serialized = textutils.serialize(tasks)
+    rednet.broadcast(serialized, "todolist_sync")
+end
+
+function receiveUpdates()
+    while true do
+        local senderId, message, protocol = rednet.receive("todolist_sync")
+        if senderId ~= os.getComputerID() then
+            local data = textutils.unserialize(message)
+            if data then
+                tasks = data
+                term.setBackgroundColor(colors.purple)
+                start()
+                writetasks()
+            end
+        end
+    end
+end
 function savetofile()
     io.open("tasks.txt","w+")
     io.output("tasks.txt")
@@ -151,122 +170,130 @@ term.setBackgroundColor(colors.purple)
 term.clear()
 start()
 writetasks()
-while true do
-    local event,button,x,y = os.pullEvent("mouse_click")
-    for p,c in pairs(lineindex) do
-        if adding==false and button==1 and y==p and x==26 then
-            deletetask(c)
-        elseif adding==false and deleting==false and button==1 and y==p and x>=2 and x<=25 then
-            if tasks[c].isDone == 0 then
-                tasks[c].isDone = 1
-            else 
-                tasks[c].isDone = 0
+function main()
+    while true do
+        local event,button,x,y = os.pullEvent("mouse_click")
+        for p,c in pairs(lineindex) do
+            if adding==false and button==1 and y==p and x==26 then
+                deletetask(c)
+            elseif adding==false and deleting==false and button==1 and y==p and x>=2 and x<=25 then
+                if tasks[c].isDone == 0 then
+                    tasks[c].isDone = 1
+                else 
+                    tasks[c].isDone = 0
+                end
+                savetofile()
+                broadcastTasks()
+                term.setBackgroundColor(colors.purple)
+                term.clear()
+                start()
+                writetasks()
             end
-            savetofile()
+        end
+        if deleting==false and adding==false and button==1 and x>=2 and x<=6 and y==line+2 then
+            addtask()
+            term.setCursorPos(4+#inputting,7)
+            term.setCursorBlink(true)
+            writing=true
+        elseif button==1 and adding==false and deleting==true and x<=10 and x>=4 and y==9 then
+            deleting=false
             term.setBackgroundColor(colors.purple)
             term.clear()
             start()
             writetasks()
+        elseif button==1 and adding==false and deleting==true and x<=24 and x>=17 and y==9 then
+            deleting=false
+            table.remove(tasks,deletenumber)
+            savetofile()
+            broadcastTasks()
+            term.setBackgroundColor(colors.purple)
+            term.clear()
+            start()
+            writetasks()
+        elseif button==1 and deleting==false and adding==true and x<=10 and x>=4 and y==9 then
+            term.setBackgroundColor(colors.purple)
+            term.clear()
+            start()
+            writetasks()
+            term.setCursorBlink(false)
+            inputting=""
+            adding=false
+            writing=false
+        elseif button==1 and deleting==false and adding==true and x>=17 and x<=24 and y==9 then
+            table.insert(tasks, {isDone=0, tasken=inputting})
+            savetofile()
+            broadcastTasks()
+            inputting=""
+            term.setBackgroundColor(colors.purple)
+            term.clear()
+            start()
+            writetasks()
+            adding=false
+            writing=false
+        elseif button==1 and deleting==false and adding==true and x>=4 and x<=24 and y==7 then
+            term.setCursorPos(4+#inputting,7)
+            term.setCursorBlink(true)
+            writing=true
         end
-    end
-    if deleting==false and adding==false and button==1 and x>=2 and x<=6 and y==line+2 then
-        addtask()
-        term.setCursorPos(4+#inputting,7)
-        term.setCursorBlink(true)
-        writing=true
-    elseif button==1 and adding==false and deleting==true and x<=10 and x>=4 and y==9 then
-        deleting=false
-        term.setBackgroundColor(colors.purple)
-        term.clear()
-        start()
-        writetasks()
-    elseif button==1 and adding==false and deleting==true and x<=24 and x>=17 and y==9 then
-        deleting=false
-        table.remove(tasks,deletenumber)
-        savetofile()
-        term.setBackgroundColor(colors.purple)
-        term.clear()
-        start()
-        writetasks()
-    elseif button==1 and deleting==false and adding==true and x<=10 and x>=4 and y==9 then
-        term.setBackgroundColor(colors.purple)
-        term.clear()
-        start()
-        writetasks()
-        term.setCursorBlink(false)
-        inputting=""
-        adding=false
-        writing=false
-    elseif button==1 and deleting==false and adding==true and x>=17 and x<=24 and y==9 then
-        table.insert(tasks, {isDone=0, tasken=inputting})
-        savetofile()
-        inputting=""
-        term.setBackgroundColor(colors.purple)
-        term.clear()
-        start()
-        writetasks()
-        adding=false
-        writing=false
-    elseif button==1 and deleting==false and adding==true and x>=4 and x<=24 and y==7 then
-        term.setCursorPos(4+#inputting,7)
-        term.setCursorBlink(true)
-        writing=true
-    end
-    while writing==true do
-        local e1, p1, x, y = os.pullEvent()
-        if e1 == "key" then
-            if p1 == keys.backspace then
-                cursorx,cursory=term.getCursorPos()
-                local CharPosInput = cursorx-4
-                if CharPosInput>0 then
-                    del_pressed = 1
-                    inputting = inputting:sub(1, CharPosInput - 1) .. inputting:sub(CharPosInput + 1)
-                    cursorx = cursorx-1
+        while writing==true do
+            local e1, p1, x, y = os.pullEvent()
+            if e1 == "key" then
+                if p1 == keys.backspace then
+                    cursorx,cursory=term.getCursorPos()
+                    local CharPosInput = cursorx-4
+                    if CharPosInput>0 then
+                        del_pressed = 1
+                        inputting = inputting:sub(1, CharPosInput - 1) .. inputting:sub(CharPosInput + 1)
+                        cursorx = cursorx-1
+                    end
+                    draw()
+                elseif p1 == keys.left then
+                    cursorx,cursory = term.getCursorPos()
+                    if cursorx>=5 then
+                        term.setCursorPos(cursorx-1,cursory)
+                    end
+                elseif p1 == keys.right then
+                    cursorx,cursory = term.getCursorPos()
+                    if cursorx<4+#inputting then
+                        term.setCursorPos(cursorx+1,cursory)
+                    end
                 end
+            elseif e1 == "char" then
+                cursorx,cursory = term.getCursorPos()
+                inputting=string.sub(inputting,1,cursorx-4)..p1..string.sub(inputting,cursorx-3)
                 draw()
-            elseif p1 == keys.left then
-                cursorx,cursory = term.getCursorPos()
-                if cursorx>=5 then
-                    term.setCursorPos(cursorx-1,cursory)
+            elseif e1=="mouse_click" then
+                if x>=5 and x<=24 and y==7 then
+    
+                elseif x>=4 and x<=10 and y==9 then
+                    term.setBackgroundColor(colors.purple)
+                    term.clear()
+                    start()
+                    writetasks()
+                    term.setCursorBlink(false)
+                    inputting=""
+                    adding=false
+                    writing=false
+                elseif x>=17 and x<=24 and y==9 then
+                    term.setCursorBlink(false)
+                    table.insert(tasks, {isDone=0,tasken=inputting})
+                    savetofile()
+                    broadcastTasks()
+                    inputting=""
+                    term.setBackgroundColor(colors.purple)
+                    term.clear()
+                    start()
+                    writetasks()
+                    adding=false
+                    writing=false
+                else
+                    writing=false
+                    term.setCursorBlink(false)
                 end
-            elseif p1 == keys.right then
-                cursorx,cursory = term.getCursorPos()
-                if cursorx<4+#inputting then
-                    term.setCursorPos(cursorx+1,cursory)
-                end
-            end
-        elseif e1 == "char" then
-            cursorx,cursory = term.getCursorPos()
-            inputting=string.sub(inputting,1,cursorx-4)..p1..string.sub(inputting,cursorx-3)
-            draw()
-        elseif e1=="mouse_click" then
-            if x>=5 and x<=24 and y==7 then
-
-            elseif x>=4 and x<=10 and y==9 then
-                term.setBackgroundColor(colors.purple)
-                term.clear()
-                start()
-                writetasks()
-                term.setCursorBlink(false)
-                inputting=""
-                adding=false
-                writing=false
-            elseif x>=17 and x<=24 and y==9 then
-                term.setCursorBlink(false)
-                table.insert(tasks, {isDone=0,tasken=inputting})
-                savetofile()
-                inputting=""
-                term.setBackgroundColor(colors.purple)
-                term.clear()
-                start()
-                writetasks()
-                adding=false
-                writing=false
-            else
-                writing=false
-                term.setCursorBlink(false)
             end
         end
+        os.sleep(0.1)
     end
-    os.sleep(0.1)
 end
+
+parallel.waitForAny(receiveUpdates,main)
