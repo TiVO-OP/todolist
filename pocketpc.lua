@@ -38,6 +38,7 @@ function receiveUpdates()
             local data = textutils.unserialize(message)
             if data then
                 tasks = data
+                savetofile()
                 term.setBackgroundColor(colors.purple)
                 start()
                 writetasks()
