@@ -109,10 +109,10 @@ writetasks()
 while true do
     local event,side,x,y = os.pullEvent("monitor_touch")
     for p,c in pairs(lineindex) do
-        if y==p and x==26 then
+        if y==p and x==monitorW then
             deletetask(c)
         end
-        if deleting==false and y==p and x==1 then
+        if deleting==false and y==p and x>=2 and x<=3 then
             if tasks[c].isDone == 0 then
                 tasks[c].isDone = 1
             else 
