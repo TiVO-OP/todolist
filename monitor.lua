@@ -8,6 +8,7 @@ function start()
     monitor.setCursorPos(2,1)
     monitor.setBackgroundColor(colors.purple)
     monitor.setTextColor(colors.white)
+    monitor.clear()
     monitor.write("TO-DO LIST:")
     return 0
 end
@@ -45,7 +46,7 @@ function receiveUpdates()
             local data = textutils.unserialize(message)
             if data then
                 tasks = data
-                term.setBackgroundColor(colors.purple)
+                monitor.setBackgroundColor(colors.purple)
                 start()
                 writetasks()
             end
@@ -103,7 +104,7 @@ end
 function deletetask(tasknumber)
     deleting=true
     deletenumber=tasknumber
-    monitor.setCursorPos(3,5)
+    monitor.setCursorPos(monitorW/3,monitorH/2)
     for i=1,5,1 do
         monitor.setBackgroundColor(colors.lightGray)
         monitor.write(string.rep(" ",22))
