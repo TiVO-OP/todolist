@@ -7,6 +7,7 @@ function start()
     term.setCursorPos(2,1)
     term.setBackgroundColor(colors.purple)
     term.setTextColor(colors.white)
+    term.clear()
     term.write("TO-DO LIST:")
     return 0
 end
