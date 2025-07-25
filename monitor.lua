@@ -111,8 +111,7 @@ while true do
     for p,c in pairs(lineindex) do
         if y==p and x==monitorW then
             deletetask(c)
-        end
-        if deleting==false and y==p and x>=2 and x<=monitorW-1 then
+        elseif deleting==false and y==p and x>=2 and x<=monitorW-1 then
             if tasks[c].isDone == 0 then
                 tasks[c].isDone = 1
             else 
@@ -131,8 +130,7 @@ while true do
         monitor.clear()
         start()
         writetasks()
-    end
-    if deleting==true and x<=24 and x>=17 and y==9 then
+    elseif deleting==true and x<=24 and x>=17 and y==9 then
         deleting=false
         table.remove(tasks,deletenumber)
         savetofile()
