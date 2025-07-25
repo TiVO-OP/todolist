@@ -102,21 +102,24 @@ function writetasks()
 end
 
 function deletetask(tasknumber)
+    ccy = math.floor(monitorH/3)+4
+    fieldstart = math.floor(monitorW/2)-math.floor((monitorW-18)/2)
+    textstart = math.floor((fieldstart+monitorW-9)/2)-math.floor(15/2)
     deleting=true
     deletenumber=tasknumber
-    monitor.setCursorPos(monitorW/3,monitorH/2)
+    monitor.setCursorPos(fieldstart,math.floor(monitorH/3))
     for i=1,5,1 do
         monitor.setBackgroundColor(colors.lightGray)
-        monitor.write(string.rep(" ",22))
-        monitor.setCursorPos(3,i+5)
+        monitor.write(string.rep(" ",monitorW-18))
+        monitor.setCursorPos(fieldstart,i+math.floor(monitorH/3))
     end
-    monitor.setCursorPos(6,6)
+    monitor.setCursorPos(textstart,monitorH/3)
     monitor.setTextColor(colors.black)
     monitor.write("Delete task #"..tasknumber.."?")
-    monitor.setCursorPos(4,9)
+    monitor.setCursorPos(fieldstart+1,ccy)
     monitor.setBackgroundColor(colors.red)
     monitor.write("Cancel")
-    monitor.setCursorPos(17,9)
+    monitor.setCursorPos(fieldstart+monitorW-26,ccy)
     monitor.setBackgroundColor(colors.lime)
     monitor.write("Confirm")
     return 0
@@ -146,13 +149,13 @@ function main()
                 writetasks()
             end
         end
-        if deleting==true and x<=10 and x>=4 and y==9 then
+        if deleting==true and x>=fieldstart+1 and x<=fieldstart+6 and y==ccy then
             deleting=false
             monitor.setBackgroundColor(colors.purple)
             monitor.clear()
             start()
             writetasks()
-        elseif deleting==true and x<=24 and x>=17 and y==9 then
+        elseif deleting==true and x>=fieldstart+monitorW-26 and x<=fieldstart+monitorW-20 and y==ccy then
             deleting=false
             table.remove(tasks,deletenumber)
             savetofile()
