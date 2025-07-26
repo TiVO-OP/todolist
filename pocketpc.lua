@@ -11,7 +11,6 @@ function start()
     term.write("TO-DO LIST:")
     return 0
 end
-local del_pressed=0
 local deletenumber=0
 local line=2
 local writing = false
@@ -160,12 +159,7 @@ function draw()
     term.write(string.rep(" ",20))
     term.setCursorPos(4,7)
     term.write(inputting)
-    if cursorx~=4+#inputting and del_pressed == 0 then
-        term.setCursorPos(cursorx+1,7)
-    elseif cursorx~=4+#inputting and del_pressed == 1 then
-        term.setCursorPos(cursorx-1,7)
-        del_pressed=0
-    end
+    term.setCursorPos(math.max(4, math.min(cursorx,4+#inputting)),7)
     return 0
 end
 term.setBackgroundColor(colors.purple)
@@ -244,9 +238,8 @@ function main()
                     cursorx,cursory=term.getCursorPos()
                     local CharPosInput = cursorx-4
                     if CharPosInput>0 then
-                        del_pressed = 1
                         inputting = inputting:sub(1, CharPosInput - 1) .. inputting:sub(CharPosInput + 1)
-                        cursorx = cursorx-1
+                        term.setCursorPos(cursorx-1,cursory)
                     end
                     draw()
                 elseif p1 == keys.left then
