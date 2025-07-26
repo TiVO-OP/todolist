@@ -256,6 +256,7 @@ function main()
             elseif e1 == "char" then
                 cursorx,cursory = term.getCursorPos()
                 inputting=string.sub(inputting,1,cursorx-4)..p1..string.sub(inputting,cursorx-3)
+                term.setCursorPos(cursorx+1,cursory)
                 draw()
             elseif e1=="mouse_click" then
                 if x>=5 and x<=24 and y==7 then
