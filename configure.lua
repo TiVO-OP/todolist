@@ -2,46 +2,74 @@ termx,termy = term.getSize()
 term.clear()
 wrap = require "cc.strings".wrap
 if fs.exists("config.txt") then
-
+  port=""
 else
-  fs.open("config.txt","r+")
+  fs.open("config.txt","w")
+  port = ""
 end
 configScreen = 0
 function portWriting()
-    local e1, p1, x, y = os.pullEvent()
-      if e1 == "key" then
-          if p1 == keys.backspace then
-              CurX,CurY=term.getCursorPos()
-              local CharPosInput = CurX-1
-              if CharPosInput>0 then
-                  del_pressed = 1
-                  port = port:sub(1, CharPosInput - 1) .. port:sub(CharPosInput + 1)
-                  CurX = CurX-1
-              end
-              draw()
-          elseif p1 == keys.left then
-              CurX,CurY = term.getCursorPos()
-              if CurX>=5 then
-                  term.setCursorPos(CurX-1,CurY)
-              end
-          elseif p1 == keys.right then
-              CurX,CurY = term.getCursorPos()
-              if CurX<4+#port then
-                  term.setCursorPos(CurX+1,CurY)
-              end
-          end
-      elseif e1 == "char" then
+  term.setCursorBlink(true)
+  local e1, p1, x, y = os.pullEvent()
+    if e1 == "key" then
+        if p1 == keys.backspace then
+            CurX,CurY=term.getCursorPos()
+            local CharPosInput = CurX-2
+            if CharPosInput>0 then
+                port = port:sub(1, CharPosInput - 1) .. port:sub(CharPosInput + 1)
+                term.setCursorPos(CurX-1,CurY)
+            end
+            drawPort()
+        elseif p1 == keys.left then
+            CurX,CurY = term.getCursorPos()
+            if CurX>2 then
+                term.setCursorPos(CurX-1,inputY)
+            end
+        elseif p1 == keys.right then
+            CurX,CurY = term.getCursorPos()
+            if CurX<2+#port then
+                term.setCursorPos(CurX+1,inputY)
+            end
+        elseif p1 == keys.space then
           CurX,CurY = term.getCursorPos()
-          port=string.sub(port,1,CurX-4)..p1..string.sub(port,CurX-3)
-          draw()
-      elseif e1=="mouse_click" then
-          if x>=termx-8 and x<=termx-1 and y==termy-1 then
-            configScreen=1
-          else
-              writingMode = false
-          end
+          port=string.sub(port,1,CurX-2).." "..string.sub(port,CurX-1)
+          term.setCursorPos(CurX+1,CurY)
+          drawPort()
+        end
+    elseif e1 == "char" then
+      if p1:match("%d") then
+        CurX,CurY = term.getCursorPos()
+        port=string.sub(port,1,CurX-2)..p1..string.sub(port,CurX-1)
+        term.setCursorPos(CurX+1,CurY)
+        drawPort()
       end
+    elseif e1=="mouse_click" then
+        if x>=termx-8 and x<=termx-1 and y==termy-1 then
+          writingMode = false
+          term.setCursorBlink(false)
+          configScreen=1
+        elseif x>=2 and x<=8 and y==inputY then
+
+        else
+            writingMode = false
+            term.setCursorBlink(false)
+        end
+    end
 end
+
+function drawPort()
+    CurX,CurY=term.getCursorPos()
+    term.setBackgroundColor(colors.white)
+    term.setTextColor(colors.black)
+    term.setCursorPos(2,inputY)
+    term.write(string.rep(" ",7))
+    term.setCursorPos(2,inputY)
+    term.write(port)
+    maxCursorX = math.min(2+#port,8)
+    CursorX = math.max(2, math.min(CurX,maxCursorX))
+    term.setCursorPos(CursorX,inputY)
+end
+
 function portConfig()
   inputY=2
   term.setBackgroundColor(colors.lightGray)
@@ -59,8 +87,9 @@ function portConfig()
     term.setCursorPos(2,CurY+1)
     term.write(t)
   end
+  inputY=inputY+2
   CurX,CurY=term.getCursorPos()
-  term.setCursorPos(2,CurY+2)
+  term.setCursorPos(2,inputY)
   term.setBackgroundColor(colors.white)
   term.write(string.rep(" ",7))
   term.setBackgroundColor(colors.lime)
@@ -77,7 +106,18 @@ elseif configScreen==1 then
   term.write("Config Screen 1")
 end
 while true do
-  if writingMode==true then
+  local event,mouseButton,mouseX,mouseY = os.pullEvent("mouse_click")
+  if mouseX>=2 and mouseX<=8 and mouseY==inputY then
+    writingMode=true
+    term.setTextColor(colors.black)
+    term.setBackgroundColor(colors.white)
+    term.setCursorPos(2,inputY)
+  end
+  while writingMode==true and configScreen==0 do
     portWriting()
+  end
+  if configScreen==1 then
+    term.clear()
+    term.write("Config Screen 1")
   end
 end
