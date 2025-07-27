@@ -2,12 +2,14 @@ termx,termy = term.getSize()
 term.clear()
 wrap = require "cc.strings".wrap
 if fs.exists("config.txt") then
-  port=""
+  configFile = io.open("config.txt","r")
+  port=configFile:read("l")
 else
   fs.open("config.txt","w")
   port = ""
 end
 configScreen = 0
+isPortChecked=false
 function portWriting()
   term.setCursorBlink(true)
   local e1, p1, x, y = os.pullEvent()
@@ -98,26 +100,31 @@ function portConfig()
 
 end
 
+portConfig()
 
-if configScreen==0 then
-  portConfig()
-elseif configScreen==1 then
-  term.clear()
-  term.write("Config Screen 1")
-end
 while true do
+  if configScreen==0 and isPortChecked==false then
+    drawPort()
+    term.setCursorPos(#port+2,inputY)
+    isPortChecked=true
+  end
   local event,mouseButton,mouseX,mouseY = os.pullEvent("mouse_click")
   if mouseX>=2 and mouseX<=8 and mouseY==inputY then
     writingMode=true
     term.setTextColor(colors.black)
     term.setBackgroundColor(colors.white)
-    term.setCursorPos(2,inputY)
+    term.setCursorPos(#port+2,inputY)
+  elseif mouseX>=termx-8 and mouseX<=termx-1 and mouseY==termy-1 then
+    configScreen=1
   end
   while writingMode==true and configScreen==0 do
     portWriting()
   end
   if configScreen==1 then
+    term.setBackgroundColor(colors.lightGray)
+    term.setTextColor(colors.gray)
+    term.setCursorPos(1,6)
     term.clear()
-    term.write("Config Screen 1")
+    term.write("port is "..port)
   end
 end
