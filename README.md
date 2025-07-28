@@ -1,2 +1,7 @@
+# W.I.P
 # To-Do List
-A computerCraft To-Do List program that works mainly on a pocket computer with an integration to display the list on a Monitor
+A CC:Tweaked To-Do List program that works either on a pocket computer or on a advanced computer connected to monitors or on both using networking to synchronize the lists between devices.
+To install it simply run:
+
+~~```wget ```~~ W.I.P
+and then run ```tdlinstaller.lua``` - The installer will walk you through the set-up step by step.
