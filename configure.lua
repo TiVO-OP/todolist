@@ -7,22 +7,21 @@ if fs.exists("config.json") then
   configFile.close()
   configFromFile = textutils.unserializeJSON(contentOfFile)
   isNetworked = configFromFile["networked"]
-  if isNetworked==true then
+  if configFromFile["port"]~="" then
     port = configFromFile["port"]
-  else port="" end
+  else port="55895" end
   selectedColorPalette = configFromFile["color"]
 else
-  configFile = fs.open("config.json","w")
-  configFile.close()
   isNetworked=false
-  port = ""
+  port="55895"
   selectedColorPalette=colorPaletteDesc.Purple
 end
+
 configScreenDesc = {Network=0,Port=1,Color=2,Overview=3}
 currentConfigScreen = configScreenDesc.Network
 colorPaletteDesc = {Purple=0,Dark=1,Light=2,Red=3,Green=4,Blue=5}
-colorPaletteName = {"Purple (default)","Dark Mode","Light Mode","Red","Green","Blue"}
-isPortChecked,writingMode=false,false
+colorPaletteName = {"Purple","Dark Mode","Light Mode","Red","Green","Blue"}
+isPortChecked,writingMode,closeProgram=false,false,false
 
 function nextBackButtons()
   term.setBackgroundColor(colors.white)
@@ -40,6 +39,8 @@ function nextScreenCheck()
     currentConfigScreen=configScreenDesc.Color
   elseif currentConfigScreen==configScreenDesc.Port then
     currentConfigScreen=configScreenDesc.Color
+  elseif currentConfigScreen==configScreenDesc.Color then
+    currentConfigScreen=configScreenDesc.Overview
   end
 end
 
@@ -50,6 +51,8 @@ function prevScreenCheck()
     currentConfigScreen=configScreenDesc.Network
   elseif currentConfigScreen==configScreenDesc.Port then
     currentConfigScreen=configScreenDesc.Network
+  elseif currentConfigScreen==configScreenDesc.Overview then
+    currentConfigScreen=configScreenDesc.Color
   end
 end
 
@@ -98,6 +101,8 @@ function portWriting()
             if portNumericValue>65535 then
               port="65535"
             end
+          else 
+            port="55895"
           end
         end
       end
@@ -119,7 +124,7 @@ function drawPort()
 end
 
 function portConfig()
-  inputY=2
+  inputY=4
   term.setBackgroundColor(colors.lightGray)
   term.clear()
   term.setCursorPos(math.floor(termx/2)-7,1)
@@ -128,9 +133,12 @@ function portConfig()
   term.setTextColor(colors.white)
   term.write("Port Selection")
   term.setBackgroundColor(colors.lightGray)
-  term.setCursorPos(2,2)
+  term.setCursorPos(2,3)
+  term.setTextColor(colors.black)
+  term.write("Enter the port number.")
   term.setTextColor(colors.gray)
-  for l,t in pairs(wrap("Enter the port number here. It will be used to connect to the other computer, so make sure you use the same number on both.\nThe number must be between 0 and 65535.",termx-2)) do
+  term.setCursorPos(2,4)
+  for l,t in pairs(wrap("It will be used to connect to the other computer, so make sure you use the same number on both devices.",termx-2)) do
     inputY=inputY+1
     CurX,CurY=term.getCursorPos()
     term.setCursorPos(2,CurY+1)
@@ -154,9 +162,12 @@ function networkingConfig()
   term.setCursorPos(math.floor(termx/2)-7,1)
   term.write("Network Config")
   term.setBackgroundColor(colors.lightGray)
+  term.setTextColor(colors.black)
+  term.setCursorPos(2,3)
+  term.write("Is the device networked?")
   term.setTextColor(colors.gray)
-  term.setCursorPos(2,2)
-  for l,t in pairs(wrap("Is the device networked? Keep the box unchecked if you are going to use this as a standalone device.",termx-2)) do
+  term.setCursorPos(2,4)
+  for l,t in pairs(wrap("Keep the box unchecked if you are going to use this as a standalone device.",termx-2)) do
     CurX,CurY=term.getCursorPos()
     term.setCursorPos(2,CurY+1)
     term.write(t)
@@ -178,7 +189,7 @@ function colorPaletteConfig()
   term.setCursorPos(math.floor(termx/2)-10,1)
   term.write("Color Palette Config")
   term.setBackgroundColor(colors.lightGray)
-  term.setTextColor(colors.gray)
+  term.setTextColor(colors.black)
   term.setCursorPos(2,2)
   for l,t in pairs(wrap("Select the color palette of your liking.",termx-2)) do
     CurX,CurY=term.getCursorPos()
@@ -203,7 +214,57 @@ function colorPaletteConfig()
   nextBackButtons()
 end
 
-while true do
+function overviewScreen()
+  term.setBackgroundColor(colors.lightGray)
+  term.clear()
+  term.setCursorPos(1,1)
+  term.setBackgroundColor(colors.gray)
+  term.setTextColor(colors.white)
+  term.clearLine()
+  term.setCursorPos(math.floor(termx/2)-4,1)
+  term.write("Overview")
+  term.setBackgroundColor(colors.lightGray)
+  term.setTextColor(colors.black)
+  term.setCursorPos(2,3)
+  term.write("Config summary.")
+  term.setCursorPos(2,5)
+  CurX,CurY=term.getCursorPos()
+  term.setBackgroundColor(colors.white) term.clearLine() term.setTextColor(colors.black) term.write("Networked: ") term.setCursorPos(termx-10,CurY) term.setTextColor(colors.gray) term.write(tostring(isNetworked))
+  term.setCursorPos(2,CurY+1)
+  term.setBackgroundColor(colors.lightGray) term.clearLine() term.setTextColor(colors.black) term.write("Port: ") term.setCursorPos(termx-10,CurY+1) term.setTextColor(colors.gray) 
+  if isNetworked==true then
+    term.write(port)
+  else
+    term.write("<not set>")
+  end
+  CurY=CurY+1
+  term.setCursorPos(2,CurY+1)
+  term.setBackgroundColor(colors.white) term.clearLine() term.setTextColor(colors.black) term.write("List Color: ") term.setCursorPos(termx-10,CurY+1) term.setTextColor(colors.gray) term.write(colorPaletteName[selectedColorPalette+1])
+  nextBackButtons()
+  term.setCursorPos(termx-7,termy-1)
+  term.setTextColor(colors.black)
+  term.setBackgroundColor(colors.lime)
+  term.write(" Apply ")
+end
+
+function saveConfig()
+  configToFile = {networked=isNetworked,port=port,color=selectedColorPalette}
+  ConfigFile = fs.open("config.json","w")
+  ConfigFile.write(textutils.serializeJSON(configToFile))
+  ConfigFile.close()
+  term.setBackgroundColor(colors.black)
+  term.setCursorPos(1,1)
+  term.clear()
+  if fs.exists("pocketpc.lua") then
+    shell.run("pocketpc.lua")
+  elseif fs.exists("monitor.lua") then
+    shell.run("monitor.lua")
+  end
+  closeProgram = true
+end
+
+
+while closeProgram==false do
   if currentConfigScreen==configScreenDesc.Network then
     networkingConfig()
     if isNetworked==false then
@@ -239,7 +300,7 @@ while true do
       term.setTextColor(colors.purple)
       term.write("\x95")
       term.setTextColor(colors.black)
-      term.write("Purple (default)")
+      term.write("Purple")
     elseif selectedColorPalette == colorPaletteDesc.Dark then
       term.setCursorPos(2,CurY+3)
       term.setTextColor(colors.black)
@@ -293,6 +354,10 @@ while true do
     end
   end
 
+  if currentConfigScreen==configScreenDesc.Overview then
+    overviewScreen()
+  end
+
   if currentConfigScreen==configScreenDesc.Port then
     portConfig()
     drawPort()
@@ -339,7 +404,7 @@ while true do
   end
   
   
-  if mouseX>=termx-6 and mouseX<=termx-1 and mouseY==termy-1 and currentConfigScreen~=configScreenDesc.Color then
+  if mouseX>=termx-6 and mouseX<=termx-1 and mouseY==termy-1 and currentConfigScreen~=configScreenDesc.Overview then
     term.setBackgroundColor(colors.gray)
     term.setTextColor(colors.white)
     term.setCursorPos(termx-6,termy-1)
@@ -370,8 +435,7 @@ while true do
         end
       end
     end
-  end
-  if mouseX>=2 and mouseX<=8 and mouseY==termy-1 and currentConfigScreen~=configScreenDesc.Network then
+  elseif mouseX>=2 and mouseX<=7 and mouseY==termy-1 and currentConfigScreen~=configScreenDesc.Network then
     term.setBackgroundColor(colors.gray)
     term.setTextColor(colors.white)
     term.setCursorPos(2,termy-1)
@@ -383,13 +447,13 @@ while true do
         term.setTextColor(colors.black)
         term.setCursorPos(2,termy-1)
         term.write("\x1B Back")
-        if mouseEventX>=2 and mouseEventX<=8 and mouseEventY==termy-1 then
+        if mouseEventX>=2 and mouseEventX<=7 and mouseEventY==termy-1 then
           prevScreenCheck()
           isPortChecked=false
         end
         break
       elseif mouseEvent=="mouse_drag" and mouseTrue==1 then
-        if mouseEventX>=2 and mouseEventX<=8 and mouseEventY==termy-1 then
+        if mouseEventX>=2 and mouseEventX<=7 and mouseEventY==termy-1 then
           term.setBackgroundColor(colors.gray)
           term.setTextColor(colors.white)
           term.setCursorPos(2,termy-1)
@@ -399,6 +463,37 @@ while true do
           term.setTextColor(colors.black)
           term.setCursorPos(2,termy-1)
           term.write("\x1B Back")
+        end
+      end
+    end
+
+  elseif mouseX>=termx-7 and mouseX<=termx-1 and mouseY==termy-1 and currentConfigScreen==configScreenDesc.Overview then
+    term.setBackgroundColor(colors.gray)
+    term.setTextColor(colors.white)
+    term.setCursorPos(termx-7,termy-1)
+    term.write(" Apply ")
+    while true do
+      local mouseEvent,mouseTrue,mouseEventX,mouseEventY=os.pullEvent()
+      if mouseEvent=="mouse_up" and mouseTrue==1 then
+        term.setBackgroundColor(colors.lime)
+        term.setTextColor(colors.black)
+        term.setCursorPos(termx-7,termy-1)
+        term.write(" Apply ")
+        if mouseEventX>=termx-7 and mouseEventX<=termx-1 and mouseEventY==termy-1 then
+          saveConfig()
+        end
+        break
+      elseif mouseEvent=="mouse_drag" and mouseTrue==1 then
+        if mouseEventX>=termx-7 and mouseEventX<=termx-1 and mouseEventY==termy-1 then
+          term.setBackgroundColor(colors.gray)
+          term.setTextColor(colors.white)
+          term.setCursorPos(termx-7,termy-1)
+          term.write(" Apply ")
+        else
+          term.setBackgroundColor(colors.lime)
+          term.setTextColor(colors.black)
+          term.setCursorPos(termx-7,termy-1)
+          term.write(" Apply ")
         end
       end
     end
