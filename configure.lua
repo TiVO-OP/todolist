@@ -1,4 +1,10 @@
 termx,termy = term.getSize()
+configScreenDesc = {Network=0,Port=1,Color=2,Overview=3}
+currentConfigScreen = configScreenDesc.Network
+colorPaletteDesc = {Purple=0,Dark=1,Light=2,Red=3,Green=4,Blue=5}
+colorPaletteName = {"Purple","Dark Mode","Light Mode","Red","Green","Blue"}
+isPortChecked,writingMode,closeProgram=false,false,false
+
 term.clear()
 wrap = require "cc.strings".wrap
 if fs.exists("config.json") then
@@ -17,11 +23,7 @@ else
   selectedColorPalette=colorPaletteDesc.Purple
 end
 
-configScreenDesc = {Network=0,Port=1,Color=2,Overview=3}
-currentConfigScreen = configScreenDesc.Network
-colorPaletteDesc = {Purple=0,Dark=1,Light=2,Red=3,Green=4,Blue=5}
-colorPaletteName = {"Purple","Dark Mode","Light Mode","Red","Green","Blue"}
-isPortChecked,writingMode,closeProgram=false,false,false
+
 
 function nextBackButtons()
   term.setBackgroundColor(colors.white)
