@@ -1,5 +1,8 @@
 termx,termy=term.getSize()
 deviceSet=0
+tasks = fs.open("tasks.txt","w")
+tasks.close()
+
 
 function mainScreen()
   term.setBackgroundColor(colors.lightGray)
