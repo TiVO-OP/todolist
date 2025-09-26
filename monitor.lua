@@ -1,8 +1,51 @@
 
 modem = peripheral.find("modem", rednet.open)
 monitor = peripheral.find("monitor")
-rednet.CHANNEL_BROADCAST = 55859
-monitor.setPaletteColor(colors.magenta,0xa848e8)
+
+colorPaletteDesc = {Purple=0,Dark=1,Light=2,Red=3,Green=4,Blue=5}
+if fs.exists("config.json") then
+  configFile = fs.open("config.json","r")
+  contentOfFile = configFile.readAll()
+  configFile.close()
+  configFromFile = textutils.unserializeJSON(contentOfFile)
+  isNetworked = configFromFile["networked"]
+  if configFromFile["port"]~="" then
+    port = configFromFile["port"]
+  else port="55895" end
+  selectedColorPalette = configFromFile["color"]
+else
+  shell.run("configure.lua")
+end
+
+rednet.CHANNEL_BROADCAST = port
+
+term.setPaletteColor(colors.white,0xFFFFFF)
+term.setPaletteColor(colors.black,0x000000)
+term.setPaletteColor(colors.lime,0x7FCC19)
+if selectedColorPalette == colorPaletteDesc.Purple then
+  fgColor = 0xA848E8
+  bgColor = 0xB266E5
+elseif selectedColorPalette == colorPaletteDesc.Dark then
+  fgColor = 0x262626
+  bgColor = 0x404040
+elseif selectedColorPalette == colorPaletteDesc.Light then
+  fgColor = 0xD4D4D4
+  bgColor = 0xF0F0F0
+  term.setPaletteColor(colors.white,0x262626)
+  term.setPaletteColor(colors.black,0xFFFFFF)
+elseif selectedColorPalette == colorPaletteDesc.Red then
+  fgColor = 0xAA0000
+  bgColor = 0xFF0000
+elseif selectedColorPalette == colorPaletteDesc.Green then
+  fgColor = 0x00AA00
+  bgColor = 0x00D600
+elseif selectedColorPalette == colorPaletteDesc.Blue then
+  fgColor = 0x0000AA
+  bgColor = 0x0000FF
+end
+term.setPaletteColor(colors.magenta,fgColor)
+term.setPaletteColor(colors.purple,bgColor)
+
 local wrap = require "cc.strings".wrap
 function start()
     monitor.setCursorPos(2,1)
@@ -170,4 +213,11 @@ function main()
     end
 end
 
-parallel.waitForAny(receiveUpdates,main)
+if isNetworked==false then
+	while true do
+		main()
+	end
+else 
+	parallel.waitForAny(main,receiveUpdates)
+end
+
