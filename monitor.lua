@@ -19,9 +19,9 @@ end
 
 rednet.CHANNEL_BROADCAST = port
 
-term.setPaletteColor(colors.white,0xFFFFFF)
-term.setPaletteColor(colors.black,0x000000)
-term.setPaletteColor(colors.lime,0x7FCC19)
+monitor.setPaletteColor(colors.white,0xFFFFFF)
+monitor.setPaletteColor(colors.black,0x000000)
+monitor.setPaletteColor(colors.lime,0x7FCC19)
 if selectedColorPalette == colorPaletteDesc.Purple then
   fgColor = 0xA848E8
   bgColor = 0xB266E5
@@ -43,8 +43,8 @@ elseif selectedColorPalette == colorPaletteDesc.Blue then
   fgColor = 0x0000AA
   bgColor = 0x0000FF
 end
-term.setPaletteColor(colors.magenta,fgColor)
-term.setPaletteColor(colors.purple,bgColor)
+monitor.setPaletteColor(colors.magenta,fgColor)
+monitor.setPaletteColor(colors.purple,bgColor)
 
 local wrap = require "cc.strings".wrap
 function start()
