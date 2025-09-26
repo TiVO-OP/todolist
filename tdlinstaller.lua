@@ -62,6 +62,7 @@ function install()
   end
   term.setCursorPos(1,3)
   term.blit("[INSTALL] startup","05555555000000000","fffffffffffffffff")
+  shell.run("wget https://raw.githubusercontent.com/TiVO-OP/todolist/refs/heads/main/startup.lua")
   os.sleep(1)
 end
 
