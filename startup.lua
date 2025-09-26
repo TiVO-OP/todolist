@@ -3,7 +3,7 @@ if fs.exists("config.json") then
     local configFromFile = configFile.readAll()
     configFile.close()
 
-    if configFromFile~="" then
+    if contentOfFile~="" then
         if fs.exists("monitor.lua") then
             shell.run("monitor.lua")
         else 
